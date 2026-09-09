@@ -5,7 +5,12 @@ Docs: https://docs.github.com/en/rest/search
 """
 import requests
 import hashlib
+import sys
+import os
 from datetime import datetime, timezone
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from text_clean import summarize, is_mostly_english
 
 GITHUB_API_URL = "https://api.github.com/search/issues"
 
@@ -37,7 +42,8 @@ def fetch(category: str = "all", max_results: int = 30, github_token: str | None
     if github_token:
         headers["Authorization"] = f"token {github_token}"
 
-    params = {"q": query, "per_page": min(max_results, 50)}
+    # over-fetch since we filter out noisy/non-English/too-short entries afterward
+    params = {"q": query, "per_page": min(max_results * 3, 100)}
 
     try:
         resp = requests.get(GITHUB_API_URL, headers=headers, params=params, timeout=15)
@@ -52,7 +58,14 @@ def fetch(category: str = "all", max_results: int = 30, github_token: str | None
     for item in items:
         title = item.get("title", "").strip()
         body = (item.get("body") or "").strip()
-        description = (body[:400] + "...") if len(body) > 400 else body
+
+        # skip entries that aren't readable/substantial enough to be a real problem statement
+        if not is_mostly_english(title) or not is_mostly_english(body):
+            continue
+        if len(body) < 60:
+            continue
+
+        description = summarize(body, max_len=240)
         source_url = item.get("html_url", "")
         repo_url = item.get("repository_url", "")
         repo_name = repo_url.split("/repos/")[-1] if repo_url else ""
@@ -63,10 +76,13 @@ def fetch(category: str = "all", max_results: int = 30, github_token: str | None
             "description": description or "(no description provided)",
             "category": category,
             "technology": repo_name,
+            "difficulty": "Beginner-friendly (open-source contribution)",
             "source_name": "GitHub",
             "source_url": source_url,
             "date_fetched": datetime.now(timezone.utc).isoformat(),
         })
+        if len(results) >= max_results:
+            break
 
     return results
 
@@ -76,3 +92,4 @@ if __name__ == "__main__":
     out = fetch(category="python", max_results=5)
     for r in out:
         print(r.get("title"), "->", r.get("source_url"))
+

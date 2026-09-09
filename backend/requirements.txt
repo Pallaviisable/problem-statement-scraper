@@ -1,0 +1,5 @@
+flask
+requests
+playwright
+beautifulsoup4
+kaggle

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ProbSet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0A;
+    --ink: #F5F5F0;
+    --ink-mute: #8A8A85;
+    --accent: #2DD4BF;
+    --accent-ink: #04201C;
+    --border: #1F1F1F;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  h1, h2 { font-family: 'Space Grotesk', sans-serif; margin: 0; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  nav { display: flex; align-items: center; justify-content: space-between; max-width: 1180px; margin: 0 auto; padding: 28px 5vw; border-bottom: 1px solid var(--border); }
+  nav .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 18px; }
+  nav .logo span { color: var(--accent); }
+  .hero { max-width: 1180px; margin: 0 auto; padding: 100px 5vw 80px; }
+  .hero h1 { font-size: clamp(36px, 6vw, 68px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.08; margin-bottom: 24px; }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p.tagline { font-size: 17px; color: var(--ink-mute); max-width: 56ch; line-height: 1.6; margin-bottom: 40px; }
+  .controls-row { display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+  select, input[type=number] { font-family: inherit; font-size: 15px; padding: 8px 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--ink); min-width: 140px; }
+  select option { color: #111; background: #fff; }
+  select:focus, input:focus { outline: none; border-bottom-color: var(--accent); }
+  .source-list { display: flex; gap: 22px; flex-wrap: wrap; }
+  .source-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink); cursor: pointer; user-select: none; }
+  .source-item input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .cta-row { display: flex; align-items: center; gap: 24px; margin-top: 30px; }
+  button.primary { font-family: inherit; font-size: 15px; font-weight: 600; padding: 14px 30px; border: none; background: var(--accent); color: var(--accent-ink); cursor: pointer; border-radius: 6px; }
+  button.primary:disabled { opacity: 0.35; cursor: default; }
+  button.secondary { font-family: inherit; font-size: 14px; font-weight: 600; color: var(--ink-mute); background: none; border: none; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  button.secondary:disabled { opacity: 0.3; cursor: default; }
+  #status { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--ink-mute); margin: 24px 0 0; }
+  .stats-line { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--ink-mute); margin-top: 8px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 5vw 100px; }
+  .group { margin-top: 60px; }
+  .group-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 16px; }
+  .group-count { color: var(--ink-mute); font-weight: 400; margin-left: 8px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: 8px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .card-title { font-size: 16px; font-weight: 600; margin: 0; line-height: 1.35; }
+  .card-desc { font-size: 13.5px; color: var(--ink-mute); line-height: 1.55; margin: 0; max-height: 4.6em; overflow: hidden; position: relative; }
+  .card-desc::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1.3em; background: linear-gradient(to bottom, transparent, var(--bg)); }
+  .card-meta { display: flex; gap: 10px; align-items: center; font-size: 12px; color: var(--ink-mute); margin-top: auto; padding-top: 6px; border-top: 1px solid var(--border); }
+  .card-meta .tech { font-family: 'IBM Plex Mono', monospace; }
+  a.open-link { color: var(--accent); font-weight: 600; text-decoration: none; font-size: 13px; }
+  a.open-link:hover { text-decoration: underline; }
+  .empty { color: var(--ink-mute); text-align: center; padding: 80px 20px; font-size: 15px; }
+  .skeleton-card { height: 140px; border: 1px solid var(--border); border-radius: 8px; animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.15; } }
+  footer { max-width: 1180px; margin: 0 auto; padding: 60px 5vw 100px; border-top: 1px solid var(--border); }
+  footer h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-mute); margin-bottom: 24px; font-weight: 600; }
+  .log-row { display: flex; gap: 18px; align-items: baseline; padding: 14px 0; border-top: 1px solid var(--border); font-size: 14px; }
+  .log-row .status { font-family: 'IBM Plex Mono', monospace; font-size: 12px; width: 80px; flex-shrink: 0; }
+  .log-row .status.done { color: var(--accent); }
+  .log-row .status.progress { color: #D8B34A; }
+  .log-row .status.pending { color: var(--ink-mute); }
+  .log-row .desc { color: var(--ink-mute); }
+  .log-row .desc b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<nav><div class="logo">Prob<span>Set</span></div></nav>
+
+<div class="hero">
+  <h1>Real problem statements.<br><span class="accent">Zero fluff.</span></h1>
+  <p class="tagline">Pulled straight from hackathons, open-source, and competitions — filtered by category, cleaned up, ready to hand to students.</p>
+
+  <div class="controls-row">
+    <div class="field">
+      <label for="category">Category</label>
+      <select id="category">
+        {% for c in categories %}
+        <option value="{{ c }}">{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>Sources</label>
+      <div class="source-list">
+        {% for s in sources %}
+        <label class="source-item"><input type="checkbox" class="source-check" value="{{ s }}" checked>{{ s|upper }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="field">
+      <label for="max_results">Results / source</label>
+      <input type="number" id="max_results" value="15" min="1" max="100">
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <button id="scrapeBtn" class="primary">Fetch problem statements</button>
+    <button id="downloadBtn" class="secondary" disabled>Download CSV</button>
+  </div>
+  <div id="status"></div>
+  <div class="stats-line mono" id="statsBlock">{{ sources|length }} sources tracked · 0 statements indexed · last run --</div>
+</div>
+
+<main>
+  <div id="resultsArea"></div>
+  <div class="empty" id="emptyState">No results yet — choose a category and fetch.</div>
+</main>
+
+<footer>
+  <h2>Adapter status</h2>
+  <div class="log-row"><span class="status done">done</span><span class="desc"><b>GitHub</b> — good-first-issue, working</span></div>
+  <div class="log-row"><span class="status done">done</span><span class="desc"><b>Up For Grabs</b> — working</span></div>
+  <div class="log-row"><span class="status progress">progress</span><span class="desc"><b>Zindi</b> — API confirmed, description field mapping in progress</span></div>
+  <div class="log-row"><span class="status progress">progress</span><span class="desc"><b>SIH</b> — Playwright adapter built, unconfirmed on this machine</span></div>
+  <div class="log-row"><span class="status pending">pending</span><span class="desc"><b>Kaggle</b> — needs API key setup</span></div>
+  <div class="log-row"><span class="status pending">pending</span><span class="desc"><b>AICTE archives</b> — PDF parser not started</span></div>
+  <div class="log-row"><span class="status pending">pending</span><span class="desc"><b>Devpost / HackerEarth</b> — internal JSON API not found yet</span></div>
+</footer>
+<script>
+const categoryEl = document.getElementById('category');
+const maxResultsEl = document.getElementById('max_results');
+const scrapeBtn = document.getElementById('scrapeBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const statusEl = document.getElementById('status');
+const resultsArea = document.getElementById('resultsArea');
+const emptyState = document.getElementById('emptyState');
+const statsBlock = document.getElementById('statsBlock');
+
+function checkedSources() { return Array.from(document.querySelectorAll('.source-check:checked')).map(c => c.value); }
+
+function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str || ''; return div.innerHTML; }
+
+function showSkeletons(n) {
+  resultsArea.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'card-grid';
+  for (let i = 0; i < n; i++) { const s = document.createElement('div'); s.className = 'skeleton-card'; wrap.appendChild(s); }
+  resultsArea.appendChild(wrap);
+}
+
+function renderGrouped(results) {
+  resultsArea.innerHTML = '';
+  const groups = new Map();
+  results.forEach(r => { const key = r.source_name || 'Unknown'; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(r); });
+  groups.forEach((items, sourceName) => {
+    const group = document.createElement('div');
+    group.className = 'group';
+    group.innerHTML = `<div class="group-label">${escapeHtml(sourceName)}<span class="group-count">— ${items.length}</span></div>`;
+    const grid = document.createElement('div');
+    grid.className = 'card-grid';
+    items.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <p class="card-title">${escapeHtml(r.title)}</p>
+        <p class="card-desc">${escapeHtml(r.description)}</p>
+        <div class="card-meta">
+          <span>${escapeHtml(r.category)}</span>
+          <span class="tech">${escapeHtml(r.technology || '')}</span>
+          <a class="open-link" href="${r.source_url}" target="_blank" rel="noopener">View source →</a>
+        </div>`;
+      grid.appendChild(card);
+    });
+    group.appendChild(grid);
+    resultsArea.appendChild(group);
+  });
+}
+
+scrapeBtn.addEventListener('click', async () => {
+  const category = categoryEl.value;
+  const maxResults = maxResultsEl.value;
+  const sources = checkedSources();
+  if (sources.length === 0) { statusEl.textContent = 'Select at least one source.'; return; }
+
+  scrapeBtn.disabled = true;
+  statusEl.textContent = 'Fetching…';
+  emptyState.style.display = 'none';
+  showSkeletons(4);
+
+  try {
+    const res = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({category, sources, max_results: maxResults})
+    });
+    const data = await res.json();
+    resultsArea.innerHTML = '';
+
+    if (data.results && data.results.length > 0) {
+      renderGrouped(data.results);
+      downloadBtn.disabled = false;
+    } else {
+      emptyState.textContent = 'No results found for this category/source combination.';
+      emptyState.style.display = 'block';
+    }
+
+    let statusMsg = `${data.count} problem statement(s) fetched.`;
+    if (data.errors && data.errors.length > 0) {
+      statusMsg += ` — ${data.errors.length} source error(s): ${data.errors.map(e => e.source_name + ': ' + e.error).join('; ')}`;
+    }
+    statusEl.textContent = statusMsg;
+    const now = new Date().toLocaleTimeString();
+    statsBlock.textContent = `{{ sources|length }} sources tracked · ${data.count} statements indexed · last run ${now}`;
+  } catch (e) {
+    resultsArea.innerHTML = '';
+    statusEl.textContent = 'Error: ' + e.message;
+  } finally {
+    scrapeBtn.disabled = false;
+  }
+});
+
+downloadBtn.addEventListener('click', () => { window.location.href = '/api/download-csv'; });
+</script>
+</body>
+</html>
