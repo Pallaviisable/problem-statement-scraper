@@ -60,6 +60,15 @@ def scrape():
     return jsonify({"results": all_results, "errors": errors, "count": len(all_results)})
 
 
+@app.route("/debug/sih-screenshot")
+def debug_sih_screenshot():
+    from flask import send_file
+    try:
+        return send_file("/tmp/sih_debug.png")
+    except Exception as e:
+        return f"No screenshot yet, or error: {e}", 404
+
+
 @app.route("/api/download-csv", methods=["POST"])
 def download_csv():
     payload = request.get_json(force=True) or {}

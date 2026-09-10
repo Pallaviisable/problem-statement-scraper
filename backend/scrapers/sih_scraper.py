@@ -108,6 +108,14 @@ def fetch(category: str = "all", max_results: int = 30):
             page.goto(SIH_URL, timeout=30000)
             page.wait_for_timeout(2000)
 
+            # DEBUG: capture what the browser actually sees on this server
+            try:
+                page.screenshot(path="/tmp/sih_debug.png", full_page=True)
+                with open("/tmp/sih_debug.html", "w") as dbgf:
+                    dbgf.write(page.content())
+            except Exception:
+                pass
+
             # bump page size to 100 so we need fewer "Next" clicks
             length_select = page.query_selector("select[name='dataTablePS_length']")
             if length_select:
