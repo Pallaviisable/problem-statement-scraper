@@ -192,6 +192,7 @@ scrapeBtn.addEventListener('click', async () => {
     });
     const data = await res.json();
     resultsArea.innerHTML = '';
+    currentResults = data.results || [];
 
     if (data.results && data.results.length > 0) {
       renderGrouped(data.results);
