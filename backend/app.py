@@ -27,10 +27,6 @@ SOURCES = {
 
 CATEGORIES = ["all", "software-dev", "python", "research", "mba"]
 
-# simple in-memory cache of the last scrape run, so /download-csv can reuse it
-_last_results: list[dict] = []
-
-
 @app.route("/")
 def index():
     return render_template("index.html", sources=list(SOURCES.keys()), categories=CATEGORIES)
@@ -38,7 +34,6 @@ def index():
 
 @app.route("/api/scrape", methods=["POST"])
 def scrape():
-    global _last_results
     payload = request.get_json(force=True) or {}
     category = payload.get("category", "all")
     selected_sources = payload.get("sources") or list(SOURCES.keys())
@@ -62,15 +57,16 @@ def scrape():
             else:
                 all_results.append(entry)
 
-    _last_results = all_results
     return jsonify({"results": all_results, "errors": errors, "count": len(all_results)})
 
 
-@app.route("/api/download-csv")
+@app.route("/api/download-csv", methods=["POST"])
 def download_csv():
-    if not _last_results:
-        return jsonify({"error": "No results yet. Run a scrape first."}), 400
-    csv_str = to_csv_string(_last_results)
+    payload = request.get_json(force=True) or {}
+    results = payload.get("results") or []
+    if not results:
+        return jsonify({"error": "No results to export. Run a scrape first."}), 400
+    csv_str = to_csv_string(results)
     return Response(
         csv_str,
         mimetype="text/csv",

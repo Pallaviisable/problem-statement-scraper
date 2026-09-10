@@ -130,6 +130,7 @@ const downloadBtn = document.getElementById('downloadBtn');
 const statusEl = document.getElementById('status');
 const resultsArea = document.getElementById('resultsArea');
 const emptyState = document.getElementById('emptyState');
+let currentResults = [];
 const statsBlock = document.getElementById('statsBlock');
 
 function checkedSources() { return Array.from(document.querySelectorAll('.source-check:checked')).map(c => c.value); }
@@ -215,7 +216,23 @@ scrapeBtn.addEventListener('click', async () => {
   }
 });
 
-downloadBtn.addEventListener('click', () => { window.location.href = '/api/download-csv'; });
+downloadBtn.addEventListener('click', async () => {
+  if (currentResults.length === 0) return;
+  const res = await fetch('/api/download-csv', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({results: currentResults})
+  });
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'problem_statements.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+});
 </script>
 </body>
 </html>

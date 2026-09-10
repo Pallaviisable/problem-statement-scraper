@@ -3,3 +3,5 @@ requests
 playwright
 beautifulsoup4
 kaggle
+
+gunicorn
